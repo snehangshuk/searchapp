@@ -14,6 +14,7 @@ export default function Home() {
   const { searchHistory, addToHistory, clearHistory } = useSearchHistory();
 
   const handleSearchComplete = (query: string, results: SearchResponse) => {
+    console.log("handleSearchComplete called with:", { query, results });
     setCurrentQuery(query);
     setCurrentResults(results);
     addToHistory(query, results);

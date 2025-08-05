@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Research - AI-Powered Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#2563EB',
+                        'surface': '#F8FAFC',
+                        'text-primary': '#1E293B',
+                        'text-secondary': '#475569',
+                        'border': '#E2E8F0',
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        .markdown-content h1 { @apply text-2xl font-bold mb-4 text-text-primary; }
+        .markdown-content h2 { @apply text-xl font-semibold mb-3 text-text-primary; }
+        .markdown-content h3 { @apply text-lg font-medium mb-2 text-text-primary; }
+        .markdown-content p { @apply mb-4 text-text-secondary leading-relaxed; }
+        .markdown-content ul { @apply mb-4 pl-5 list-disc text-text-secondary; }
+        .markdown-content ol { @apply mb-4 pl-5 list-decimal text-text-secondary; }
+        .markdown-content li { @apply mb-1; }
+        .markdown-content strong { @apply font-semibold text-text-primary; }
+        .markdown-content em { @apply italic; }
+        .markdown-content code { @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono text-text-primary; }
+        .markdown-content pre { @apply bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4; }
+        .markdown-content blockquote { @apply border-l-4 border-primary pl-4 italic text-text-secondary mb-4; }
+        .search-animation { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+</head>
+<body class="bg-white font-inter min-h-screen">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white border-b border-border sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-search text-white text-sm"></i>
+                    </div>
+                    <h1 class="text-xl font-semibold text-text-primary">Deep Research</h1>
+                </div>
+                <button id="toggleHistory" class="lg:hidden p-2 text-text-secondary hover:text-text-primary transition-colors">
+                    <i class="fas fa-history text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <div class="flex min-h-screen bg-surface">
+        <!-- @COMPONENT: SearchHistory Sidebar -->
+        <div id="historySidebar" class="hidden lg:block w-80 bg-white border-r border-border overflow-y-auto">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-medium text-text-primary">Search History</h2>
+                    <button id="clearHistory" class="text-text-secondary hover:text-red-500 transition-colors text-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                
+                <div id="historyEmpty" class="text-center py-8 text-text-secondary">
+                    <i class="fas fa-clock text-3xl mb-3 opacity-50"></i>
+                    <p class="text-sm">No search history yet</p>
+                    <p class="text-xs mt-1 opacity-75">Your searches will appear here</p>
+                </div>
+                
+                <div id="historyList" class="space-y-2">
+                    <!-- @MAP: searchHistory.map(item => ( -->
+                    <div class="history-item p-3 rounded-lg border border-border hover:bg-surface cursor-pointer transition-colors" data-mock="true">
+                        <div class="text-sm font-medium text-text-primary mb-1" data-bind="item.query">AI and machine learning trends</div>
+                        <div class="text-xs text-text-secondary" data-bind="item.timestamp">2 hours ago</div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: SearchHistory -->
+
+        <!-- @COMPONENT: MainContent -->
+        <div class="flex-1 flex flex-col">
+            <!-- Search Section -->
+            <div class="bg-white border-b border-border">
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-text-primary mb-2">AI-Powered Deep Research</h2>
+                        <p class="text-text-secondary">Enter your research query and get comprehensive insights</p>
+                    </div>
+                    
+                    <form id="searchForm" class="relative">
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="Enter your research query..." 
+                                class="w-full px-4 py-4 pr-12 text-lg border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                data-implementation="Connect to search functionality"
+                            >
+                            <button 
+                                type="submit" 
+                                id="searchButton"
+                                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary text-white p-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                data-event="click:handleSearch"
+                            >
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Loading State -->
+                        <div id="loadingIndicator" class="hidden mt-4 flex items-center justify-center text-text-secondary">
+                            <div class="search-animation">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>
+                            </div>
+                            <span>Researching your query...</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+                <!-- @STATE: searchResults:array = [], isLoading:boolean = false, error:string = null -->
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="text-center py-16">
+                    <div class="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-search text-2xl text-text-secondary opacity-50"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-text-primary mb-2">Ready to Research</h3>
+                    <p class="text-text-secondary mb-6">Enter a query above to start your deep research</p>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <button class="sample-query px-3 py-1 bg-surface text-text-secondary rounded-full text-sm hover:bg-border transition-colors" data-mock="true">
+                            Future of AI
+                        </button>
+                        <button class="sample-query px-3 py-1 bg-surface text-text-secondary rounded-full text-sm hover:bg-border transition-colors" data-mock="true">
+                            Climate change solutions
+                        </button>
+                        <button class="sample-query px-3 py-1 bg-surface text-text-secondary rounded-full text-sm hover:bg-border transition-colors" data-mock="true">
+                            Quantum computing
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Container -->
+                <div id="resultsContainer" class="hidden">
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold text-text-primary mb-2">Research Results</h3>
+                        <div class="flex items-center text-text-secondary text-sm">
+                            <i class="fas fa-clock mr-1"></i>
+                            <span id="searchTimestamp" data-bind="searchTimestamp">Just now</span>
+                            <span class="mx-2">•</span>
+                            <span>Query: "<span id="currentQuery" class="font-medium" data-bind="currentQuery">Sample Query</span>"</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Format Toggle -->
+                    <div class="mb-6">
+                        <div class="flex items-center space-x-1 bg-surface rounded-lg p-1 w-fit">
+                            <button id="markdownToggle" class="px-3 py-1 rounded-md text-sm font-medium transition-colors bg-white text-text-primary shadow-sm">
+                                Markdown
+                            </button>
+                            <button id="htmlToggle" class="px-3 py-1 rounded-md text-sm font-medium transition-colors text-text-secondary hover:text-text-primary">
+                                HTML
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Results Display -->
+                    <div class="bg-white rounded-xl border border-border shadow-sm">
+                        <div id="markdownResults" class="p-6 markdown-content">
+                            <!-- @FUNCTIONALITY: Display markdown formatted research results -->
+                            <div data-mock="true" data-bind="results[0].output">
+                                <h1>Artificial Intelligence: Current Trends and Future Implications</h1>
+                                
+                                <h2>Executive Summary</h2>
+                                <p>Artificial Intelligence continues to evolve rapidly, with significant breakthroughs in <strong>machine learning</strong>, natural language processing, and computer vision. This research explores the current landscape and future potential of AI technologies.</p>
+                                
+                                <h2>Key Findings</h2>
+                                <ul>
+                                    <li><strong>Generative AI</strong> has transformed content creation and productivity tools</li>
+                                    <li><strong>Machine Learning Operations (MLOps)</strong> is becoming critical for enterprise adoption</li>
+                                    <li><strong>Ethical AI</strong> frameworks are gaining regulatory attention globally</li>
+                                    <li><strong>Edge AI</strong> is enabling real-time processing in IoT devices</li>
+                                </ul>
+                                
+                                <h2>Market Analysis</h2>
+                                <p>The global AI market is projected to reach <em>$1.8 trillion by 2030</em>, driven by increased enterprise adoption and consumer applications. Key growth areas include:</p>
+                                
+                                <ol>
+                                    <li>Healthcare diagnostics and drug discovery</li>
+                                    <li>Autonomous vehicles and transportation</li>
+                                    <li>Financial services and risk management</li>
+                                    <li>Manufacturing and supply chain optimization</li>
+                                </ol>
+                                
+                                <blockquote>
+                                    "The next decade will be defined by how well we integrate AI into existing workflows while maintaining human oversight and ethical standards." - Industry Expert
+                                </blockquote>
+                                
+                                <h2>Technical Considerations</h2>
+                                <p>Implementation requires careful consideration of:</p>
+                                <ul>
+                                    <li>Data quality and governance</li>
+                                    <li>Model interpretability and explainability</li>
+                                    <li>Scalability and computational resources</li>
+                                    <li>Security and privacy compliance</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div id="htmlResults" class="hidden p-6">
+                            <!-- @FUNCTIONALITY: Display HTML formatted research results -->
+                            <div data-mock="true" data-bind="results[0].output_html">
+                                <div class="prose prose-slate max-w-none">
+                                    <h1>Artificial Intelligence: Current Trends and Future Implications</h1>
+                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                                        <p class="text-blue-800"><strong>Research Summary:</strong> Comprehensive analysis of AI trends, market opportunities, and implementation considerations for 2024 and beyond.</p>
+                                    </div>
+                                    <!-- HTML formatted content would be rendered here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="errorState" class="hidden text-center py-16">
+                    <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-text-primary mb-2">Research Failed</h3>
+                    <p class="text-text-secondary mb-4" id="errorMessage">Unable to process your research query. Please try again.</p>
+                    <button id="retryButton" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+
+    <!-- Mobile History Overlay -->
+    <div id="mobileHistoryOverlay" class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="fixed right-0 top-0 h-full w-80 bg-white shadow-lg transform transition-transform">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-medium text-text-primary">Search History</h2>
+                    <button id="closeMobileHistory" class="text-text-secondary hover:text-text-primary">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-2" id="mobileHistoryList">
+                    <!-- History items will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (function() {
+            // Application state
+            let searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            let currentResults = null;
+            let isLoading = false;
+
+            // DOM elements
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const emptyState = document.getElementById('emptyState');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const errorState = document.getElementById('errorState');
+            const historyList = document.getElementById('historyList');
+            const historyEmpty = document.getElementById('historyEmpty');
+            const clearHistoryBtn = document.getElementById('clearHistory');
+            const markdownToggle = document.getElementById('markdownToggle');
+            const htmlToggle = document.getElementById('htmlToggle');
+            const markdownResults = document.getElementById('markdownResults');
+            const htmlResults = document.getElementById('htmlResults');
+
+            // Initialize
+            updateHistoryDisplay();
+            setupEventListeners();
+
+            function setupEventListeners() {
+                // Search form submission
+                searchForm.addEventListener('submit', handleSearch);
+                
+                // Sample query buttons
+                document.querySelectorAll('.sample-query').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        searchInput.value = e.target.textContent.trim();
+                        handleSearch(e);
+                    });
+                });
+
+                // Format toggle
+                markdownToggle.addEventListener('click', () => showMarkdown());
+                htmlToggle.addEventListener('click', () => showHTML());
+
+                // History management
+                clearHistoryBtn.addEventListener('click', clearHistory);
+
+                // Mobile history toggle
+                document.getElementById('toggleHistory').addEventListener('click', toggleMobileHistory);
+                document.getElementById('closeMobileHistory').addEventListener('click', closeMobileHistory);
+                document.getElementById('mobileHistoryOverlay').addEventListener('click', (e) => {
+                    if (e.target.id === 'mobileHistoryOverlay') closeMobileHistory();
+                });
+
+                // Retry button
+                document.getElementById('retryButton').addEventListener('click', () => {
+                    if (searchInput.value.trim()) {
+                        handleSearch({ preventDefault: () => {} });
+                    }
+                });
+            }
+
+            async function handleSearch(e) {
+                e.preventDefault();
+                
+                const query = searchInput.value.trim();
+                if (!query || isLoading) return;
+
+                setLoadingState(true);
+                hideAllStates();
+                showState('loading');
+
+                try {
+                    // TODO: Replace with actual API call to n8n webhook
+                    const response = await fetch('http://localhost:5678/webhook-test/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: query })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    // Add to search history
+                    addToHistory(query);
+                    
+                    // Display results
+                    displayResults(data, query);
+                    
+                } catch (error) {
+                    console.error('Search error:', error);
+                    showError(error.message);
+                }
+
+                setLoadingState(false);
+            }
+
+            function displayResults(data, query) {
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                    showError('No results returned from search');
+                    return;
+                }
+
+                currentResults = data[0];
+                document.getElementById('currentQuery').textContent = query;
+                document.getElementById('searchTimestamp').textContent = new Date().toLocaleString();
+
+                // Update content
+                if (currentResults.output) {
+                    markdownResults.innerHTML = parseMarkdown(currentResults.output);
+                }
+                
+                if (currentResults.output_html) {
+                    htmlResults.innerHTML = currentResults.output_html;
+                }
+
+                showState('results');
+                showMarkdown(); // Default to markdown view
+            }
+
+            function parseMarkdown(markdown) {
+                // Basic markdown parsing (in real implementation, use a proper markdown library)
+                return markdown
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                    .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                    .replace(/^\* (.*$)/gim, '<li>$1</li>')
+                    .replace(/^\d+\. (.*$)/gim, '<li>$1</li>')
+                    .replace(/\n\n/gim, '</p><p>')
+                    .replace(/^(.*)$/gim, '<p>$1</p>');
+            }
+
+            function addToHistory(query) {
+                const historyItem = {
+                    query: query,
+                    timestamp: new Date().toISOString(),
+                    displayTime: new Date().toLocaleString()
+                };
+
+                // Remove if already exists
+                searchHistory = searchHistory.filter(item => item.query !== query);
+                
+                // Add to beginning
+                searchHistory.unshift(historyItem);
+                
+                // Keep only last 50 searches
+                searchHistory = searchHistory.slice(0, 50);
+                
+                // Save to localStorage
+                localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+                updateHistoryDisplay();
+            }
+
+            function updateHistoryDisplay() {
+                if (searchHistory.length === 0) {
+                    historyEmpty.classList.remove('hidden');
+                    historyList.classList.add('hidden');
+                } else {
+                    historyEmpty.classList.add('hidden');
+                    historyList.classList.remove('hidden');
+                    
+                    historyList.innerHTML = searchHistory.map(item => `
+                        <div class="history-item p-3 rounded-lg border border-border hover:bg-surface cursor-pointer transition-colors" data-query="${item.query}">
+                            <div class="text-sm font-medium text-text-primary mb-1">${item.query}</div>
+                            <div class="text-xs text-text-secondary">${getRelativeTime(item.timestamp)}</div>
+                        </div>
+                    `).join('');
+
+                    // Add click listeners to history items
+                    document.querySelectorAll('.history-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const query = item.getAttribute('data-query');
+                            searchInput.value = query;
+                            handleSearch({ preventDefault: () => {} });
+                            closeMobileHistory();
+                        });
+                    });
+                }
+            }
+
+            function getRelativeTime(timestamp) {
+                const now = new Date();
+                const past = new Date(timestamp);
+                const diffMs = now - past;
+                const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffMins = Math.floor(diffMs / (1000 * 60));
+
+                if (diffHrs > 24) return `${Math.floor(diffHrs / 24)} days ago`;
+                if (diffHrs > 0) return `${diffHrs} hours ago`;
+                if (diffMins > 0) return `${diffMins} minutes ago`;
+                return 'Just now';
+            }
+
+            function clearHistory() {
+                if (confirm('Are you sure you want to clear your search history?')) {
+                    searchHistory = [];
+                    localStorage.removeItem('searchHistory');
+                    updateHistoryDisplay();
+                }
+            }
+
+            function showMarkdown() {
+                markdownToggle.classList.add('bg-white', 'text-text-primary', 'shadow-sm');
+                markdownToggle.classList.remove('text-text-secondary');
+                htmlToggle.classList.remove('bg-white', 'text-text-primary', 'shadow-sm');
+                htmlToggle.classList.add('text-text-secondary');
+                
+                markdownResults.classList.remove('hidden');
+                htmlResults.classList.add('hidden');
+            }
+
+            function showHTML() {
+                htmlToggle.classList.add('bg-white', 'text-text-primary', 'shadow-sm');
+                htmlToggle.classList.remove('text-text-secondary');
+                markdownToggle.classList.remove('bg-white', 'text-text-primary', 'shadow-sm');
+                markdownToggle.classList.add('text-text-secondary');
+                
+                htmlResults.classList.remove('hidden');
+                markdownResults.classList.add('hidden');
+            }
+
+            function setLoadingState(loading) {
+                isLoading = loading;
+                if (loading) {
+                    loadingIndicator.classList.remove('hidden');
+                    searchButton.disabled = true;
+                } else {
+                    loadingIndicator.classList.add('hidden');
+                    searchButton.disabled = false;
+                }
+            }
+
+            function hideAllStates() {
+                emptyState.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                errorState.classList.add('hidden');
+            }
+
+            function showState(state) {
+                hideAllStates();
+                switch(state) {
+                    case 'empty':
+                        emptyState.classList.remove('hidden');
+                        break;
+                    case 'results':
+                        resultsContainer.classList.remove('hidden');
+                        break;
+                    case 'error':
+                        errorState.classList.remove('hidden');
+                        break;
+                }
+            }
+
+            function showError(message) {
+                document.getElementById('errorMessage').textContent = message;
+                showState('error');
+            }
+
+            function toggleMobileHistory() {
+                document.getElementById('mobileHistoryOverlay').classList.remove('hidden');
+            }
+
+            function closeMobileHistory() {
+                document.getElementById('mobileHistoryOverlay').classList.add('hidden');
+            }
+        })();
+    </script>
+</body>
+</html>

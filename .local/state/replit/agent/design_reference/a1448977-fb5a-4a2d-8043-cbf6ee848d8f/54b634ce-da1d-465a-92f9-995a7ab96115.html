@@ -1,0 +1,470 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Assistant - Deep Research Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'spin-slow': 'spin 2s linear infinite',
+                        'pulse-subtle': 'pulse 3s ease-in-out infinite',
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-slate-50 font-inter">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-6">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-slate-900">Research Assistant</h1>
+                <p class="text-slate-600 mt-2">Powered by n8n workflow automation</p>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <!-- @COMPONENT: MainContent -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <!-- @COMPONENT: SearchSection -->
+        <section class="mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+                <div class="text-center mb-6">
+                    <i class="fas fa-search text-4xl text-blue-500 mb-4"></i>
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-2">Start Your Research</h2>
+                    <p class="text-slate-600">Enter your research query below and let AI do the deep analysis</p>
+                </div>
+                
+                <form id="searchForm" class="space-y-4">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            data-bind="searchQuery"
+                            placeholder="What would you like to research? (e.g., 'Latest trends in AI automation')"
+                            class="w-full px-6 py-4 text-lg border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
+                            data-mock="true"
+                        >
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                            <i class="fas fa-arrow-right text-slate-400"></i>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        type="submit" 
+                        id="searchButton"
+                        data-event="click:handleSearch"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-200 focus:ring-4 focus:ring-blue-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span id="buttonText">
+                            <i class="fas fa-rocket mr-2"></i>
+                            Start Research
+                        </span>
+                        <span id="loadingText" class="hidden">
+                            <i class="fas fa-spinner animate-spin mr-2"></i>
+                            Researching...
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: SearchSection -->
+
+        <!-- @COMPONENT: LoadingState -->
+        <section id="loadingSection" class="hidden mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
+                <div class="flex flex-col items-center space-y-4">
+                    <div class="relative">
+                        <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i class="fas fa-brain text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-900 mb-2">AI Research in Progress</h3>
+                        <p class="text-slate-600">Analyzing data sources and generating comprehensive insights...</p>
+                        <div class="mt-4 flex justify-center space-x-2">
+                            <div class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                            <div class="w-2 h-2 bg-blue-600 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 bg-blue-600 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: LoadingState -->
+
+        <!-- @COMPONENT: ErrorState -->
+        <section id="errorSection" class="hidden mb-8">
+            <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-xl mt-1"></i>
+                    <div>
+                        <h3 class="text-lg font-semibold text-red-900 mb-2">Research Failed</h3>
+                        <p class="text-red-700 mb-4" id="errorMessage">Unable to complete the research request. Please try again or check your connection.</p>
+                        <button 
+                            onclick="retrySearch()" 
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                        >
+                            <i class="fas fa-redo mr-2"></i>
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: ErrorState -->
+
+        <!-- @COMPONENT: ResultsSection -->
+        <section id="resultsSection" class="hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- Results Header -->
+                <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-file-alt text-white text-xl"></i>
+                            <h3 class="text-xl font-semibold text-white">Research Results</h3>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <!-- Format Toggle -->
+                            <div class="bg-white/20 rounded-lg p-1">
+                                <button 
+                                    id="markdownTab" 
+                                    onclick="showMarkdown()"
+                                    class="px-3 py-1 rounded text-sm font-medium text-white bg-white/30 transition-all duration-200"
+                                >
+                                    Markdown
+                                </button>
+                                <button 
+                                    id="htmlTab" 
+                                    onclick="showHTML()"
+                                    class="px-3 py-1 rounded text-sm font-medium text-white/70 hover:text-white hover:bg-white/20 transition-all duration-200"
+                                >
+                                    Formatted
+                                </button>
+                            </div>
+                            <button onclick="clearResults()" class="text-white/70 hover:text-white transition-colors duration-200">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Query Display -->
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-search text-slate-500"></i>
+                        <span class="text-sm text-slate-600">Query:</span>
+                        <span class="text-sm font-medium text-slate-900" id="queryDisplay" data-bind="displayQuery">Sample research query</span>
+                    </div>
+                </div>
+
+                <!-- Results Content -->
+                <div class="p-6">
+                    <!-- Markdown View -->
+                    <div id="markdownContent" class="prose prose-slate max-w-none">
+                        <pre class="bg-slate-100 p-4 rounded-lg text-sm overflow-x-auto whitespace-pre-wrap" data-bind="results.markdown" data-mock="true"># Research Results
+
+## Executive Summary
+This comprehensive research analysis covers the latest developments in AI automation, including key trends, market insights, and future projections.
+
+## Key Findings
+- **Market Growth**: AI automation market expected to reach $15.7B by 2025
+- **Adoption Rates**: 67% of enterprises are implementing some form of AI automation
+- **Primary Use Cases**: Customer service, data processing, and workflow optimization
+
+## Detailed Analysis
+### Current Landscape
+The AI automation landscape is rapidly evolving with new tools and platforms emerging regularly. Key players include:
+
+1. **Workflow Automation**: Tools like n8n, Zapier, and Power Automate
+2. **AI Integration**: OpenAI, Anthropic, and Google AI services
+3. **Enterprise Solutions**: Microsoft, IBM, and Salesforce offerings
+
+### Future Trends
+- Increased focus on no-code/low-code solutions
+- Better integration between different AI services
+- Enhanced security and compliance features
+
+## Recommendations
+Based on the analysis, organizations should:
+- Start with pilot projects to test AI automation
+- Invest in training for technical teams
+- Develop clear governance frameworks</pre>
+                    </div>
+
+                    <!-- HTML View -->
+                    <div id="htmlContent" class="hidden prose prose-slate max-w-none" data-bind="results.html" data-mock="true">
+                        <h1>Research Results</h1>
+                        
+                        <h2>Executive Summary</h2>
+                        <p>This comprehensive research analysis covers the latest developments in AI automation, including key trends, market insights, and future projections.</p>
+                        
+                        <h2>Key Findings</h2>
+                        <ul>
+                            <li><strong>Market Growth</strong>: AI automation market expected to reach $15.7B by 2025</li>
+                            <li><strong>Adoption Rates</strong>: 67% of enterprises are implementing some form of AI automation</li>
+                            <li><strong>Primary Use Cases</strong>: Customer service, data processing, and workflow optimization</li>
+                        </ul>
+                        
+                        <h2>Detailed Analysis</h2>
+                        <h3>Current Landscape</h3>
+                        <p>The AI automation landscape is rapidly evolving with new tools and platforms emerging regularly. Key players include:</p>
+                        
+                        <ol>
+                            <li><strong>Workflow Automation</strong>: Tools like n8n, Zapier, and Power Automate</li>
+                            <li><strong>AI Integration</strong>: OpenAI, Anthropic, and Google AI services</li>
+                            <li><strong>Enterprise Solutions</strong>: Microsoft, IBM, and Salesforce offerings</li>
+                        </ol>
+                        
+                        <h3>Future Trends</h3>
+                        <ul>
+                            <li>Increased focus on no-code/low-code solutions</li>
+                            <li>Better integration between different AI services</li>
+                            <li>Enhanced security and compliance features</li>
+                        </ul>
+                        
+                        <h2>Recommendations</h2>
+                        <p>Based on the analysis, organizations should:</p>
+                        <ul>
+                            <li>Start with pilot projects to test AI automation</li>
+                            <li>Invest in training for technical teams</li>
+                            <li>Develop clear governance frameworks</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Results Footer -->
+                <div class="bg-slate-50 px-6 py-4 border-t border-slate-200">
+                    <div class="flex items-center justify-between text-sm text-slate-600">
+                        <div class="flex items-center space-x-4">
+                            <span><i class="fas fa-clock mr-1"></i> Generated just now</span>
+                            <span><i class="fas fa-server mr-1"></i> n8n Workflow</span>
+                        </div>
+                        <button onclick="exportResults()" class="text-blue-600 hover:text-blue-700 font-medium">
+                            <i class="fas fa-download mr-1"></i> Export Results
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: ResultsSection -->
+
+        <!-- @COMPONENT: EmptyState -->
+        <section id="emptyState" class="text-center py-12">
+            <div class="max-w-md mx-auto">
+                <i class="fas fa-lightbulb text-6xl text-slate-300 mb-6"></i>
+                <h3 class="text-xl font-semibold text-slate-700 mb-3">Ready to Research</h3>
+                <p class="text-slate-500">Enter a research query above to get started with AI-powered deep analysis.</p>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: EmptyState -->
+    </main>
+    <!-- @END_COMPONENT: MainContent -->
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-16">
+        <div class="max-w-4xl mx-auto px-4 py-8">
+            <div class="text-center text-slate-600">
+                <p class="mb-2">Research Assistant powered by n8n workflow automation</p>
+                <p class="text-sm text-slate-500">
+                    <i class="fas fa-server mr-1"></i>
+                    Connected to: <code class="bg-slate-100 px-2 py-1 rounded text-xs">localhost:5678</code>
+                </p>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        // @STATE: isLoading:boolean = false
+        // @STATE: searchResults:object = null
+        // @STATE: currentView:string = 'markdown'
+        
+        (function() {
+            const WEBHOOK_URL = 'http://localhost:5678/webhook-test/search';
+            
+            let isLoading = false;
+            let currentResults = null;
+            
+            // DOM Elements
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+            const buttonText = document.getElementById('buttonText');
+            const loadingText = document.getElementById('loadingText');
+            
+            // Sections
+            const loadingSection = document.getElementById('loadingSection');
+            const errorSection = document.getElementById('errorSection');
+            const resultsSection = document.getElementById('resultsSection');
+            const emptyState = document.getElementById('emptyState');
+            
+            // Content areas
+            const markdownContent = document.getElementById('markdownContent');
+            const htmlContent = document.getElementById('htmlContent');
+            const queryDisplay = document.getElementById('queryDisplay');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Tabs
+            const markdownTab = document.getElementById('markdownTab');
+            const htmlTab = document.getElementById('htmlTab');
+
+            // @FUNCTIONALITY: Form submission handler that sends query to n8n webhook
+            searchForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const query = searchInput.value.trim();
+                if (!query || isLoading) return;
+                
+                await performSearch(query);
+            });
+
+            // @FUNCTIONALITY: Main search function that calls n8n webhook
+            async function performSearch(query) {
+                try {
+                    setLoadingState(true);
+                    hideAllSections();
+                    loadingSection.classList.remove('hidden');
+                    
+                    // TODO: Implement actual API call to n8n webhook
+                    const response = await fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: query })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Simulate processing time for demo
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    displayResults(query, data[0]);
+                    
+                } catch (error) {
+                    console.error('Search error:', error);
+                    showError(error.message);
+                } finally {
+                    setLoadingState(false);
+                }
+            }
+
+            // @FUNCTIONALITY: Display search results in both markdown and HTML formats
+            function displayResults(query, results) {
+                hideAllSections();
+                
+                queryDisplay.textContent = query;
+                
+                // Update markdown content
+                const markdownPre = markdownContent.querySelector('pre');
+                markdownPre.textContent = results.output || 'No markdown output available';
+                
+                // Update HTML content
+                htmlContent.innerHTML = results.output_html || '<p>No HTML output available</p>';
+                
+                currentResults = results;
+                resultsSection.classList.remove('hidden');
+                
+                // Reset to markdown view
+                showMarkdown();
+            }
+
+            function setLoadingState(loading) {
+                isLoading = loading;
+                searchButton.disabled = loading;
+                
+                if (loading) {
+                    buttonText.classList.add('hidden');
+                    loadingText.classList.remove('hidden');
+                } else {
+                    buttonText.classList.remove('hidden');
+                    loadingText.classList.add('hidden');
+                }
+            }
+
+            function hideAllSections() {
+                loadingSection.classList.add('hidden');
+                errorSection.classList.add('hidden');
+                resultsSection.classList.add('hidden');
+                emptyState.classList.add('hidden');
+            }
+
+            function showError(message) {
+                hideAllSections();
+                errorMessage.textContent = message;
+                errorSection.classList.remove('hidden');
+            }
+
+            // @FUNCTIONALITY: Toggle between markdown and HTML display formats
+            window.showMarkdown = function() {
+                markdownContent.classList.remove('hidden');
+                htmlContent.classList.add('hidden');
+                markdownTab.classList.add('bg-white/30');
+                markdownTab.classList.remove('text-white/70');
+                htmlTab.classList.remove('bg-white/30');
+                htmlTab.classList.add('text-white/70');
+            };
+
+            window.showHTML = function() {
+                markdownContent.classList.add('hidden');
+                htmlContent.classList.remove('hidden');
+                htmlTab.classList.add('bg-white/30');
+                htmlTab.classList.remove('text-white/70');
+                markdownTab.classList.remove('bg-white/30');
+                markdownTab.classList.add('text-white/70');
+            };
+
+            window.clearResults = function() {
+                hideAllSections();
+                emptyState.classList.remove('hidden');
+                searchInput.value = '';
+                searchInput.focus();
+            };
+
+            window.retrySearch = function() {
+                if (searchInput.value.trim()) {
+                    performSearch(searchInput.value.trim());
+                }
+            };
+
+            // @FUNCTIONALITY: Export results functionality
+            window.exportResults = function() {
+                if (!currentResults) return;
+                
+                const blob = new Blob([currentResults.output || 'No content available'], { 
+                    type: 'text/markdown' 
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'research-results.md';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // Focus search input on page load
+            searchInput.focus();
+        })();
+    </script>
+</body>
+</html>

@@ -25,17 +25,29 @@ export function SearchInterface({ onSearchComplete, initialQuery = "" }: SearchI
   const searchMutation = useMutation({
     mutationFn: searchApi.search,
     onSuccess: (data) => {
+      console.log("Search API success, received data:", data);
+      console.log("Data type:", typeof data, "Is array:", Array.isArray(data));
       onSearchComplete(query, data);
       toast({
         title: "Research Complete",
         description: "Your research results are ready!",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Search failed:", error);
+      
+      let description = "Unable to process your research query. Please try again.";
+      
+      // Check if it's a connection error to n8n
+      if (error.message && error.message.includes("Unable to connect to research service")) {
+        description = "Can't connect to n8n research service. Make sure n8n is running on localhost:5678";
+      } else if (error.message) {
+        description = error.message;
+      }
+      
       toast({
         title: "Research Failed",
-        description: error.message || "Unable to process your research query. Please try again.",
+        description,
         variant: "destructive",
       });
     },

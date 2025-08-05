@@ -1,0 +1,514 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Research Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#64748B',
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 font-sans">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white shadow-sm border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-search text-2xl text-primary mr-3"></i>
+                    <h1 class="text-xl font-semibold text-slate-800">Deep Research</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="text-slate-500 hover:text-slate-700 transition-colors">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="text-slate-500 hover:text-slate-700 transition-colors">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: SearchSection -->
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-slate-800 mb-4">AI-Powered Deep Research</h2>
+            <p class="text-lg text-slate-600 mb-8">Enter your research query and get comprehensive, analyzed results powered by advanced AI workflows.</p>
+            
+            <!-- @COMPONENT: SearchBar -->
+            <div class="max-w-2xl mx-auto mb-8">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-slate-400"></i>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="searchInput"
+                        placeholder="Enter your research question..." 
+                        class="w-full pl-12 pr-4 py-4 text-lg border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent shadow-sm transition-all duration-200 bg-white"
+                        data-bind="searchQuery"
+                        data-mock="true"
+                    >
+                    <button 
+                        id="searchButton"
+                        class="absolute inset-y-0 right-0 pr-4 flex items-center"
+                        data-event="click:handleSearch"
+                    >
+                        <div class="bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center">
+                            <span>Research</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </div>
+                    </button>
+                </div>
+                <div class="text-sm text-slate-500 mt-2 text-left">
+                    <i class="fas fa-lightbulb mr-1"></i>
+                    Try: "Latest developments in quantum computing" or "Impact of AI on healthcare"
+                </div>
+            </div>
+            <!-- @END_COMPONENT: SearchBar -->
+        </div>
+        <!-- @END_COMPONENT: SearchSection -->
+
+        <!-- @COMPONENT: LoadingState -->
+        <div id="loadingState" class="hidden text-center py-12">
+            <div class="inline-flex items-center space-x-3">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <span class="text-lg text-slate-600">Conducting deep research...</span>
+            </div>
+            <div class="mt-4 text-sm text-slate-500">
+                <div class="flex justify-center items-center space-x-2">
+                    <div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    <span>Analyzing sources</span>
+                </div>
+                <div class="flex justify-center items-center space-x-2 mt-2">
+                    <div class="w-2 h-2 bg-primary rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+                    <span>Processing information</span>
+                </div>
+                <div class="flex justify-center items-center space-x-2 mt-2">
+                    <div class="w-2 h-2 bg-primary rounded-full animate-pulse" style="animation-delay: 1s"></div>
+                    <span>Generating insights</span>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: LoadingState -->
+
+        <!-- @COMPONENT: ErrorState -->
+        <div id="errorState" class="hidden bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+            <h3 class="text-lg font-semibold text-red-800 mb-2">Research Failed</h3>
+            <p class="text-red-600 mb-4" id="errorMessage">Unable to complete the research request. Please try again.</p>
+            <button 
+                id="retryButton"
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                data-event="click:retrySearch"
+            >
+                <i class="fas fa-redo mr-2"></i>Try Again
+            </button>
+        </div>
+        <!-- @END_COMPONENT: ErrorState -->
+
+        <!-- @COMPONENT: ResultsSection -->
+        <div id="resultsSection" class="hidden">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">Research Results</h3>
+                <div class="flex items-center text-sm text-slate-500">
+                    <i class="fas fa-clock mr-2"></i>
+                    <span id="searchTime" data-bind="searchTimestamp">Search completed at 2:34 PM</span>
+                    <span class="mx-2">•</span>
+                    <span id="searchQuery" data-bind="lastSearchQuery" data-mock="true">Latest developments in quantum computing</span>
+                </div>
+            </div>
+
+            <!-- @COMPONENT: ResultCard -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="border-b border-slate-200 px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="font-medium text-slate-800">Deep Research Complete</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button 
+                                id="viewMarkdown"
+                                class="px-3 py-1 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition-colors active"
+                                data-event="click:toggleMarkdown"
+                            >
+                                Markdown
+                            </button>
+                            <button 
+                                id="viewHtml"
+                                class="px-3 py-1 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition-colors"
+                                data-event="click:toggleHtml"
+                            >
+                                Formatted
+                            </button>
+                            <button class="text-slate-400 hover:text-slate-600 transition-colors">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Markdown View -->
+                <div id="markdownView" class="p-6">
+                    <div class="bg-slate-50 rounded-lg p-4 font-mono text-sm text-slate-700 whitespace-pre-wrap overflow-x-auto" data-mock="true">
+# Quantum Computing: Latest Developments
+
+## Recent Breakthroughs
+
+### IBM's 1000+ Qubit Processor
+- **IBM Condor**: 1,121 superconducting qubits
+- Milestone in quantum hardware scaling
+- Focus on error mitigation rather than fault tolerance
+
+### Google's Quantum Error Correction
+- Breakthrough in surface code implementation
+- Reduced error rates below critical threshold
+- Path toward fault-tolerant quantum computing
+
+## Key Industry Players
+
+### Hardware Development
+1. **IBM**: Leading in superconducting quantum systems
+2. **Google**: Advancing quantum supremacy research  
+3. **IonQ**: Pioneering trapped-ion technology
+4. **Rigetti**: Cloud-based quantum computing services
+
+### Software & Applications
+- Quantum machine learning algorithms
+- Optimization for logistics and finance
+- Drug discovery and molecular simulation
+- Cryptography and security applications
+
+## Future Outlook
+
+The quantum computing landscape is rapidly evolving with significant investments from both private and public sectors. Key areas to watch include:
+
+- Quantum networking and communication
+- Hybrid classical-quantum algorithms  
+- Industry-specific quantum applications
+- Standardization of quantum programming languages
+
+*Research compiled from latest academic papers, industry reports, and expert interviews.*
+                    </div>
+                </div>
+
+                <!-- HTML View -->
+                <div id="htmlView" class="p-6 hidden">
+                    <div class="prose prose-slate max-w-none" data-mock="true">
+                        <h1 class="text-2xl font-bold text-slate-800 mb-4">Quantum Computing: Latest Developments</h1>
+                        
+                        <h2 class="text-xl font-semibold text-slate-700 mb-3 mt-6">Recent Breakthroughs</h2>
+                        
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                            <h3 class="font-semibold text-blue-800 mb-2">IBM's 1000+ Qubit Processor</h3>
+                            <ul class="text-blue-700 space-y-1">
+                                <li><strong>IBM Condor</strong>: 1,121 superconducting qubits</li>
+                                <li>Milestone in quantum hardware scaling</li>
+                                <li>Focus on error mitigation rather than fault tolerance</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+                            <h3 class="font-semibold text-green-800 mb-2">Google's Quantum Error Correction</h3>
+                            <ul class="text-green-700 space-y-1">
+                                <li>Breakthrough in surface code implementation</li>
+                                <li>Reduced error rates below critical threshold</li>
+                                <li>Path toward fault-tolerant quantum computing</li>
+                            </ul>
+                        </div>
+
+                        <h2 class="text-xl font-semibold text-slate-700 mb-3">Key Industry Players</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-slate-50 rounded-lg p-4">
+                                <h3 class="font-semibold text-slate-800 mb-3">Hardware Development</h3>
+                                <div class="space-y-2 text-sm">
+                                    <div><strong>IBM</strong>: Leading in superconducting quantum systems</div>
+                                    <div><strong>Google</strong>: Advancing quantum supremacy research</div>
+                                    <div><strong>IonQ</strong>: Pioneering trapped-ion technology</div>
+                                    <div><strong>Rigetti</strong>: Cloud-based quantum computing services</div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-slate-50 rounded-lg p-4">
+                                <h3 class="font-semibold text-slate-800 mb-3">Software & Applications</h3>
+                                <div class="space-y-2 text-sm">
+                                    <div>Quantum machine learning algorithms</div>
+                                    <div>Optimization for logistics and finance</div>
+                                    <div>Drug discovery and molecular simulation</div>
+                                    <div>Cryptography and security applications</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h2 class="text-xl font-semibold text-slate-700 mb-3">Future Outlook</h2>
+                        <p class="text-slate-600 mb-4">The quantum computing landscape is rapidly evolving with significant investments from both private and public sectors. Key areas to watch include:</p>
+                        
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <ul class="space-y-2 text-slate-700">
+                                <li class="flex items-center"><i class="fas fa-network-wired text-yellow-600 mr-2"></i> Quantum networking and communication</li>
+                                <li class="flex items-center"><i class="fas fa-sync-alt text-yellow-600 mr-2"></i> Hybrid classical-quantum algorithms</li>
+                                <li class="flex items-center"><i class="fas fa-industry text-yellow-600 mr-2"></i> Industry-specific quantum applications</li>
+                                <li class="flex items-center"><i class="fas fa-code text-yellow-600 mr-2"></i> Standardization of quantum programming languages</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-6 text-sm text-slate-500 italic border-t border-slate-200 pt-4">
+                            Research compiled from latest academic papers, industry reports, and expert interviews.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ResultCard -->
+
+            <!-- @COMPONENT: ActionButtons -->
+            <div class="mt-6 flex justify-center space-x-4">
+                <button class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
+                    <i class="fas fa-download mr-2"></i>Export Results
+                </button>
+                <button class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center">
+                    <i class="fas fa-share mr-2"></i>Share Research
+                </button>
+                <button 
+                    id="newSearchButton"
+                    class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+                    data-event="click:startNewSearch"
+                >
+                    <i class="fas fa-plus mr-2"></i>New Search
+                </button>
+            </div>
+            <!-- @END_COMPONENT: ActionButtons -->
+        </div>
+        <!-- @END_COMPONENT: ResultsSection -->
+
+        <!-- @COMPONENT: EmptyState -->
+        <div id="emptyState" class="text-center py-16">
+            <div class="max-w-md mx-auto">
+                <i class="fas fa-search text-6xl text-slate-300 mb-6"></i>
+                <h3 class="text-xl font-semibold text-slate-600 mb-4">Ready to Start Research</h3>
+                <p class="text-slate-500 mb-8">Enter a question or topic above to begin your AI-powered deep research. Our advanced workflow will analyze multiple sources and provide comprehensive insights.</p>
+                
+                <div class="bg-slate-100 rounded-lg p-4 text-left">
+                    <h4 class="font-medium text-slate-700 mb-2">Example queries:</h4>
+                    <ul class="text-sm text-slate-600 space-y-1">
+                        <li>• "What are the latest trends in renewable energy?"</li>
+                        <li>• "How is AI transforming the healthcare industry?"</li>
+                        <li>• "Analysis of cryptocurrency market developments"</li>
+                        <li>• "Impact of remote work on productivity"</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: EmptyState -->
+    </main>
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-slate-500">
+                    Powered by n8n workflow automation
+                </div>
+                <div class="flex items-center space-x-4 text-sm text-slate-500">
+                    <a href="#" class="hover:text-slate-700 transition-colors">Documentation</a>
+                    <a href="#" class="hover:text-slate-700 transition-colors">API</a>
+                    <a href="#" class="hover:text-slate-700 transition-colors">Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        // TODO: Implement API integration with n8n webhook
+        (function() {
+            const WEBHOOK_URL = 'http://localhost:5678/webhook-test/search';
+            
+            // DOM elements
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const resultsSection = document.getElementById('resultsSection');
+            const emptyState = document.getElementById('emptyState');
+            const markdownView = document.getElementById('markdownView');
+            const htmlView = document.getElementById('htmlView');
+            const viewMarkdownBtn = document.getElementById('viewMarkdown');
+            const viewHtmlBtn = document.getElementById('viewHtml');
+            const retryButton = document.getElementById('retryButton');
+            const newSearchButton = document.getElementById('newSearchButton');
+
+            // @STATE: currentSearchQuery:string = ''
+            // @STATE: isLoading:boolean = false
+            // @STATE: viewMode:string = 'markdown'
+            let currentSearchQuery = '';
+            let isLoading = false;
+            let viewMode = 'markdown';
+
+            // Show initial empty state
+            showEmptyState();
+
+            // Event listeners
+            searchButton.addEventListener('click', handleSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleSearch();
+                }
+            });
+
+            retryButton.addEventListener('click', function() {
+                if (currentSearchQuery) {
+                    performSearch(currentSearchQuery);
+                }
+            });
+
+            newSearchButton.addEventListener('click', function() {
+                searchInput.value = '';
+                showEmptyState();
+                searchInput.focus();
+            });
+
+            viewMarkdownBtn.addEventListener('click', function() {
+                setViewMode('markdown');
+            });
+
+            viewHtmlBtn.addEventListener('click', function() {
+                setViewMode('html');
+            });
+
+            // @FUNCTIONALITY: Handle search request to n8n webhook
+            function handleSearch() {
+                const query = searchInput.value.trim();
+                if (!query) {
+                    searchInput.focus();
+                    return;
+                }
+                
+                currentSearchQuery = query;
+                performSearch(query);
+            }
+
+            // @FUNCTIONALITY: Send POST request to n8n webhook with query
+            async function performSearch(query) {
+                if (isLoading) return;
+                
+                isLoading = true;
+                showLoadingState();
+
+                try {
+                    const response = await fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: query
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    // Expected format: [{ "output": "<markdown>", "output_html": "<html>" }]
+                    if (data && data.length > 0 && data[0].output) {
+                        displayResults(data[0], query);
+                    } else {
+                        throw new Error('Invalid response format from webhook');
+                    }
+
+                } catch (error) {
+                    console.error('Search error:', error);
+                    showErrorState(error.message);
+                } finally {
+                    isLoading = false;
+                }
+            }
+
+            // @FUNCTIONALITY: Display search results in both markdown and HTML formats
+            function displayResults(result, query) {
+                // Update result content
+                const markdownContent = markdownView.querySelector('.font-mono');
+                const htmlContent = htmlView.querySelector('.prose');
+                
+                markdownContent.textContent = result.output;
+                htmlContent.innerHTML = result.output_html;
+
+                // Update metadata
+                document.getElementById('searchTime').textContent = `Search completed at ${new Date().toLocaleTimeString()}`;
+                document.getElementById('searchQuery').textContent = query;
+
+                showResultsState();
+            }
+
+            function setViewMode(mode) {
+                viewMode = mode;
+                
+                if (mode === 'markdown') {
+                    markdownView.classList.remove('hidden');
+                    htmlView.classList.add('hidden');
+                    viewMarkdownBtn.classList.add('bg-primary', 'text-white');
+                    viewMarkdownBtn.classList.remove('bg-slate-100', 'text-slate-700');
+                    viewHtmlBtn.classList.remove('bg-primary', 'text-white');
+                    viewHtmlBtn.classList.add('bg-slate-100', 'text-slate-700');
+                } else {
+                    htmlView.classList.remove('hidden');
+                    markdownView.classList.add('hidden');
+                    viewHtmlBtn.classList.add('bg-primary', 'text-white');
+                    viewHtmlBtn.classList.remove('bg-slate-100', 'text-slate-700');
+                    viewMarkdownBtn.classList.remove('bg-primary', 'text-white');
+                    viewMarkdownBtn.classList.add('bg-slate-100', 'text-slate-700');
+                }
+            }
+
+            // State management functions
+            function showEmptyState() {
+                hideAllStates();
+                emptyState.classList.remove('hidden');
+            }
+
+            function showLoadingState() {
+                hideAllStates();
+                loadingState.classList.remove('hidden');
+            }
+
+            function showErrorState(message) {
+                hideAllStates();
+                document.getElementById('errorMessage').textContent = message;
+                errorState.classList.remove('hidden');
+            }
+
+            function showResultsState() {
+                hideAllStates();
+                resultsSection.classList.remove('hidden');
+                setViewMode(viewMode); // Maintain current view mode
+            }
+
+            function hideAllStates() {
+                emptyState.classList.add('hidden');
+                loadingState.classList.add('hidden');
+                errorState.classList.add('hidden');
+                resultsSection.classList.add('hidden');
+            }
+        })();
+    </script>
+</body>
+</html>

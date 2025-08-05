@@ -1,13 +1,9 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+// Storage interface for search functionality
+// Currently using localStorage on frontend for search history
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // This could be extended if backend storage is needed
+  // For now, search history is handled on the frontend
 }
 
 export class MemStorage implements IStorage {

@@ -12,7 +12,25 @@ interface SearchResultsProps {
 export function SearchResults({ results, query }: SearchResultsProps) {
   const [showMarkdown, setShowMarkdown] = useState(true);
 
-  if (!results || results.length === 0) {
+  // Debug logging
+  console.log("SearchResults received:", { results, query, resultsType: typeof results, isArray: Array.isArray(results) });
+  
+  // Handle both array and single object responses
+  let resultsArray: any[];
+  if (Array.isArray(results)) {
+    resultsArray = results;
+  } else if (results && typeof results === 'object') {
+    resultsArray = [results];
+  } else {
+    resultsArray = [];
+  }
+  
+  console.log("Results array:", resultsArray);
+  if (resultsArray.length > 0) {
+    console.log("First result:", resultsArray[0]);
+  }
+
+  if (!results || resultsArray.length === 0) {
     return (
       <div className="text-center py-16">
         <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
@@ -24,7 +42,20 @@ export function SearchResults({ results, query }: SearchResultsProps) {
     );
   }
 
-  const result = results[0];
+  const result = resultsArray[0];
+
+  // Check if result has the expected structure
+  if (!result || !result.output) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto mb-4">
+          <Search className="h-8 w-8 text-text-secondary opacity-50" />
+        </div>
+        <h3 className="text-xl font-medium text-text-primary mb-2">No Results Available</h3>
+        <p className="text-text-secondary mb-6">Unable to retrieve research results. Please check your n8n connection.</p>
+      </div>
+    );
+  }
 
   const parseMarkdown = (markdown: string) => {
     // Basic markdown parsing for display
@@ -39,7 +70,7 @@ export function SearchResults({ results, query }: SearchResultsProps) {
       .replace(/`(.*?)`/gim, '<code class="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-text-primary">$1</code>')
       .replace(/^> (.*)$/gim, '<blockquote class="border-l-4 border-primary pl-4 italic text-text-secondary mb-4">$1</blockquote>')
       .replace(/\n\n/gim, '</p><p class="mb-4 text-text-secondary leading-relaxed">')
-      .replace(/(<li.*<\/li>)/gis, '<ul class="mb-4 pl-5 list-disc text-text-secondary">$1</ul>')
+      .replace(/(<li.*<\/li>)/gi, '<ul class="mb-4 pl-5 list-disc text-text-secondary">$1</ul>')
       .replace(/^(?!<[h|u|l|b|p])(.*)$/gim, '<p class="mb-4 text-text-secondary leading-relaxed">$1</p>');
   };
 
@@ -96,7 +127,7 @@ export function SearchResults({ results, query }: SearchResultsProps) {
           ) : (
             <div 
               className="prose prose-slate max-w-none"
-              dangerouslySetInnerHTML={{ __html: result.output_html }}
+              dangerouslySetInnerHTML={{ __html: result.output_html || parseMarkdown(result.output) }}
             />
           )}
         </div>

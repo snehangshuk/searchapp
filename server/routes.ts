@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
 import { searchRequestSchema } from "@shared/schema";
+import { config } from "./config";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy route to n8n webhook
@@ -11,7 +12,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { query } = searchRequestSchema.parse(req.body);
 
       // Make request to n8n webhook
-      const n8nResponse = await fetch("http://localhost:5678/webhook-test/search", {
+      const n8nResponse = await fetch(config.webhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -24,7 +25,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const data = await n8nResponse.json();
-      res.json(data);
+      console.log("n8n response structure:", JSON.stringify(data, null, 2));
+      
+      // Ensure the response is an array as expected by the frontend
+      const responseData = Array.isArray(data) ? data : [data];
+      res.json(responseData);
     } catch (error) {
       console.error("Search API error:", error);
       
@@ -38,7 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof Error) {
         if (error.message.includes("fetch")) {
           return res.status(503).json({ 
-            message: "Unable to connect to research service. Please ensure n8n is running on localhost:5678" 
+            message: `Unable to connect to research service. Please ensure n8n is running at ${config.webhookUrl}` 
           });
         }
         return res.status(500).json({ message: error.message });
