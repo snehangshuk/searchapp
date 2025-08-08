@@ -3,31 +3,37 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --background: hsl(210, 40%, 98%);
+  --foreground: hsl(210, 16%, 11%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215, 13%, 34%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(210, 16%, 11%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(215, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
-  --radius: 0.5rem;
+  --card-foreground: hsl(210, 16%, 11%);
+  --border: hsl(210, 40%, 90%);
+  --input: hsl(210, 40%, 90%);
+  --primary: hsl(200, 85%, 45%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(210, 16%, 11%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(210, 16%, 11%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(200, 85%, 45%);
+  --radius: 0.75rem;
   
-  /* Custom colors from design reference */
+  /* Zen-inspired custom colors */
   --surface: hsl(210, 40%, 98%);
   --text-primary: hsl(210, 16%, 11%);
   --text-secondary: hsl(215, 13%, 34%);
+  --zen-accent: hsl(160, 60%, 45%);
+  --zen-muted: hsl(210, 40%, 95%);
+  --zen-border: hsl(210, 40%, 88%);
+  --zen-icon-bg: hsl(200, 85%, 45%);
+  --zen-icon-text: hsl(0, 0%, 100%);
+  --zen-icon-shadow: hsl(200, 85%, 35%);
 }
 
 .dark {
@@ -41,21 +47,27 @@
   --card-foreground: hsl(0, 0%, 98%);
   --border: hsl(240, 3.7%, 15.9%);
   --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(215, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
+  --primary: hsl(200, 85%, 45%);
+  --primary-foreground: hsl(210, 40%, 98%);
   --secondary: hsl(240, 3.7%, 15.9%);
   --secondary-foreground: hsl(0, 0%, 98%);
   --accent: hsl(240, 3.7%, 15.9%);
   --accent-foreground: hsl(0, 0%, 98%);
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
-  --radius: 0.5rem;
+  --ring: hsl(200, 85%, 45%);
+  --radius: 0.75rem;
   
-  /* Custom colors for dark mode */
+  /* Dark mode zen colors */
   --surface: hsl(240, 8%, 6%);
   --text-primary: hsl(0, 0%, 98%);
   --text-secondary: hsl(240, 5%, 64.9%);
+  --zen-accent: hsl(160, 60%, 45%);
+  --zen-muted: hsl(240, 8%, 8%);
+  --zen-border: hsl(240, 8%, 12%);
+  --zen-icon-bg: hsl(200, 85%, 45%);
+  --zen-icon-text: hsl(0, 0%, 100%);
+  --zen-icon-shadow: hsl(200, 85%, 35%);
 }
 
 @layer base {
@@ -65,7 +77,18 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Dark mode transition */
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -85,6 +108,30 @@
   .border-border {
     border-color: var(--border);
   }
+
+  .bg-zen-accent {
+    background-color: var(--zen-accent);
+  }
+
+  .text-zen-accent {
+    color: var(--zen-accent);
+  }
+
+  .border-zen-border {
+    border-color: var(--zen-border);
+  }
+
+  .bg-zen-muted {
+    background-color: var(--zen-muted);
+  }
+
+  .bg-zen-icon-bg {
+    background-color: var(--zen-icon-bg);
+  }
+
+  .text-zen-icon-text {
+    color: var(--zen-icon-text);
+  }
   
   .line-clamp-2 {
     display: -webkit-box;
@@ -92,41 +139,135 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Zen-inspired gradients */
+  .zen-gradient {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--zen-muted) 100%);
+  }
+
+  .zen-gradient-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--zen-accent) 100%);
+  }
+
+  /* Smooth transitions */
+  .zen-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .zen-transition-slow {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Zen-inspired shadows */
+  .zen-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .zen-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark mode shadows */
+  .dark .zen-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+
+  .dark .zen-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Zen-inspired focus states */
+  .zen-focus {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+
+  /* Zen-inspired hover effects */
+  .zen-hover {
+    @apply hover:scale-105 hover:shadow-lg transition-all duration-300;
+  }
+
+  /* Enhanced icon visibility for light mode */
+  .icon-enhanced {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    stroke-width: 1.5;
+  }
+
+  .dark .icon-enhanced {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  }
+
+  /* Icon with stronger contrast for light backgrounds */
+  .icon-strong {
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15));
+    stroke-width: 2;
+  }
+
+  .dark .icon-strong {
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
+  }
+
+  /* Icon with background for better visibility */
+  .icon-with-bg {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 4px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .icon-with-bg {
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Icon with border for definition */
+  .icon-bordered {
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    padding: 2px;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark .icon-bordered {
+    border: 2px solid rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.2);
+  }
 }
 
-/* Markdown content styling */
+/* Markdown content styling with zen aesthetics */
 .markdown-content h1 { 
-  @apply text-2xl font-bold mb-4;
+  @apply text-3xl font-bold mb-6;
   color: var(--text-primary);
+  border-bottom: 2px solid var(--zen-border);
+  padding-bottom: 0.5rem;
 }
 
 .markdown-content h2 { 
-  @apply text-xl font-semibold mb-3;
+  @apply text-2xl font-semibold mb-4 mt-8;
   color: var(--text-primary);
 }
 
 .markdown-content h3 { 
-  @apply text-lg font-medium mb-2;
+  @apply text-xl font-medium mb-3 mt-6;
   color: var(--text-primary);
 }
 
 .markdown-content p { 
-  @apply mb-4 leading-relaxed;
+  @apply mb-6 leading-relaxed text-lg;
   color: var(--text-secondary);
 }
 
 .markdown-content ul { 
-  @apply mb-4 pl-5 list-disc;
+  @apply mb-6 pl-6 list-disc space-y-2;
   color: var(--text-secondary);
 }
 
 .markdown-content ol { 
-  @apply mb-4 pl-5 list-decimal;
+  @apply mb-6 pl-6 list-decimal space-y-2;
   color: var(--text-secondary);
 }
 
 .markdown-content li { 
-  @apply mb-1;
+  @apply leading-relaxed;
 }
 
 .markdown-content strong { 
@@ -139,30 +280,118 @@
 }
 
 .markdown-content code { 
-  @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono;
+  @apply bg-zen-muted px-3 py-1 rounded-md text-sm font-mono;
   color: var(--text-primary);
+  border: 1px solid var(--zen-border);
 }
 
 .markdown-content pre { 
-  @apply bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4;
+  @apply bg-zen-muted p-6 rounded-xl overflow-x-auto mb-6 border border-zen-border;
 }
 
 .markdown-content blockquote { 
-  @apply border-l-4 pl-4 italic mb-4;
-  border-color: var(--primary);
+  @apply border-l-4 pl-6 italic mb-6 py-2;
+  border-color: var(--zen-accent);
   color: var(--text-secondary);
+  background: linear-gradient(90deg, var(--zen-muted) 0%, transparent 100%);
 }
 
-/* Loading animation */
-@keyframes search-pulse {
+/* Zen-inspired loading animations */
+@keyframes zen-pulse {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.7;
+    transform: scale(1.05);
   }
 }
 
-.search-animation {
-  animation: search-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@keyframes zen-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes zen-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.zen-pulse {
+  animation: zen-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.zen-float {
+  animation: zen-float 3s ease-in-out infinite;
+}
+
+.zen-fade-in {
+  animation: zen-fade-in 0.6s ease-out;
+}
+
+/* Zen-inspired scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--zen-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--zen-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Zen-inspired selection */
+::selection {
+  background: var(--zen-accent);
+  color: white;
+}
+
+/* Zen-inspired focus ring */
+.zen-focus-ring:focus {
+  outline: 2px solid var(--zen-accent);
+  outline-offset: 2px;
+}
+
+/* Dark mode specific styles */
+.dark .zen-gradient {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--zen-muted) 100%);
+}
+
+.dark .bg-white\/80 {
+  background-color: rgba(240, 10%, 3.9%, 0.8);
+}
+
+.dark .bg-white\/60 {
+  background-color: rgba(240, 10%, 3.9%, 0.6);
+}
+
+.dark .bg-white\/40 {
+  background-color: rgba(240, 10%, 3.9%, 0.4);
+}
+
+.dark .hover\:bg-white:hover {
+  background-color: rgba(240, 10%, 3.9%, 0.8);
+}
+
+.dark .hover\:bg-white\/50:hover {
+  background-color: rgba(240, 10%, 3.9%, 0.5);
 }

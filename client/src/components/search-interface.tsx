@@ -3,7 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Sparkles, Lightbulb } from "lucide-react";
+import { ZenSpinner } from "@/components/ui/zen-loader";
 import { searchApi } from "@/lib/search-api";
 import type { SearchResponse } from "@shared/schema";
 
@@ -13,9 +14,12 @@ interface SearchInterfaceProps {
 }
 
 const sampleQueries = [
-  "Future of AI",
-  "Climate change solutions",
-  "Quantum computing",
+  "Future of AI and machine learning",
+  "Climate change solutions and innovations",
+  "Quantum computing applications",
+  "Sustainable energy technologies",
+  "Space exploration and discoveries",
+  "Biotechnology breakthroughs"
 ];
 
 export function SearchInterface({ onSearchComplete, initialQuery = "" }: SearchInterfaceProps) {
@@ -30,7 +34,7 @@ export function SearchInterface({ onSearchComplete, initialQuery = "" }: SearchI
       onSearchComplete(query, data);
       toast({
         title: "Research Complete",
-        description: "Your research results are ready!",
+        description: "Your insights are ready to explore!",
       });
     },
     onError: (error: any) => {
@@ -65,58 +69,78 @@ export function SearchInterface({ onSearchComplete, initialQuery = "" }: SearchI
   };
 
   return (
-    <div>
+    <div className="max-w-4xl mx-auto">
       <form onSubmit={handleSubmit} className="relative">
-        <div className="relative">
+        <div className="relative group">
           <Input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Enter your research query..."
-            className="w-full px-4 py-4 pr-12 text-lg border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            placeholder="What would you like to research today?"
+            className="w-full px-6 py-6 pr-16 text-xl border-2 border-zen-border rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary zen-transition bg-white/80 dark:bg-black/80 backdrop-blur-sm shadow-lg hover:shadow-xl"
             disabled={searchMutation.isPending}
           />
-          <Button
-            type="submit"
-            size="sm"
-            disabled={!query.trim() || searchMutation.isPending}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary text-white p-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            {searchMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Search className="h-4 w-4" />
-            )}
-          </Button>
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!query.trim() || searchMutation.isPending}
+              className="bg-zen-gradient-primary text-white p-3 rounded-xl hover:shadow-lg zen-transition hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {searchMutation.isPending ? (
+                <ZenSpinner size="sm" />
+              ) : (
+                <Search className="h-5 w-5 icon-strong" />
+              )}
+            </Button>
+          </div>
         </div>
         
         {/* Loading State */}
         {searchMutation.isPending && (
-          <div className="mt-4 flex items-center justify-center text-text-secondary">
-            <div className="animate-pulse">
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          <div className="mt-8 flex items-center justify-center text-text-secondary zen-fade-in">
+            <div className="flex items-center space-x-4 bg-white/60 dark:bg-black/60 backdrop-blur-sm px-8 py-6 rounded-2xl shadow-lg">
+              <ZenSpinner size="md" />
+              <span className="text-lg font-medium">Researching your query...</span>
             </div>
-            <span>Researching your query...</span>
           </div>
         )}
       </form>
 
       {/* Sample Queries */}
       {!searchMutation.isPending && !query && (
-        <div className="mt-8 text-center">
-          <p className="text-text-secondary mb-4">Try these sample queries:</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {sampleQueries.map((sampleQuery) => (
+        <div className="mt-12 text-center zen-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center justify-center mb-6">
+            <Lightbulb className="h-6 w-6 text-zen-accent mr-2 icon-strong" />
+            <p className="text-lg font-medium text-text-secondary">Try these research topics:</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
+            {sampleQueries.map((sampleQuery, index) => (
               <Button
                 key={sampleQuery}
                 variant="secondary"
                 size="sm"
                 onClick={() => handleSampleQuery(sampleQuery)}
-                className="px-3 py-1 bg-surface text-text-secondary rounded-full text-sm hover:bg-border transition-colors"
+                className="px-4 py-2 bg-white/60 dark:bg-black/60 backdrop-blur-sm text-text-secondary rounded-xl text-sm hover:bg-white dark:hover:bg-black hover:text-text-primary hover:shadow-lg zen-transition hover:scale-105 border border-zen-border"
+                style={{ animationDelay: `${0.4 + index * 0.1}s` }}
               >
+                <Sparkles className="h-4 w-4 mr-2 text-zen-accent icon-strong" />
                 {sampleQuery}
               </Button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State with Zen Design */}
+      {!searchMutation.isPending && query && !searchMutation.isError && (
+        <div className="mt-8 text-center zen-fade-in">
+          <div className="bg-white/40 dark:bg-black/40 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
+            <div className="w-16 h-16 bg-zen-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 zen-shadow">
+              <Search className="h-8 w-8 text-white icon-strong" />
+            </div>
+            <h3 className="text-xl font-semibold text-text-primary mb-2">Ready to Research</h3>
+            <p className="text-text-secondary">Press Enter or click the search button to begin your research journey</p>
           </div>
         </div>
       )}

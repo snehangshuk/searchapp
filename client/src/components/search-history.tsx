@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Clock, Trash2 } from "lucide-react";
+import { Clock, Trash2, Sparkles, History } from "lucide-react";
 import type { SearchHistoryItem } from "@shared/schema";
 
 interface SearchHistoryProps {
@@ -35,43 +35,82 @@ export function SearchHistory({
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-medium text-text-primary">Search History</h2>
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-zen-gradient-primary rounded-xl flex items-center justify-center zen-shadow">
+            <History className="text-white text-lg icon-strong" size={18} />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-text-primary">Search History</h2>
+            <p className="text-sm text-text-secondary">Your research journey</p>
+          </div>
+        </div>
         {searchHistory.length > 0 && (
           <Button
             variant="ghost"
             size="sm"
             onClick={handleClearHistory}
-            className="text-text-secondary hover:text-red-500 transition-colors"
+            className="text-text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl zen-transition p-2"
           >
-            <Trash2 size={16} />
+            <Trash2 size={18} className="icon-strong" />
           </Button>
         )}
       </div>
       
       {searchHistory.length === 0 ? (
-        <div className="text-center py-8 text-text-secondary">
-          <Clock className="h-8 w-8 mx-auto mb-3 opacity-50" />
-          <p className="text-sm">No search history yet</p>
-          <p className="text-xs mt-1 opacity-75">Your searches will appear here</p>
+        <div className="text-center py-12 zen-fade-in">
+          <div className="w-16 h-16 bg-zen-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Clock className="h-8 w-8 text-text-secondary opacity-60 icon-strong" />
+          </div>
+          <h3 className="text-lg font-medium text-text-primary mb-2">No Search History</h3>
+          <p className="text-sm text-text-secondary mb-4">Your research queries will appear here</p>
+          <div className="bg-white/40 dark:bg-black/40 backdrop-blur-sm rounded-xl p-4 shadow-lg">
+            <div className="flex items-center justify-center space-x-2 text-zen-accent">
+              <Sparkles className="h-4 w-4 icon-strong" />
+              <span className="text-xs font-medium">Start exploring to build your history</span>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="space-y-2">
-          {searchHistory.map((item) => (
+        <div className="space-y-3">
+          {searchHistory.map((item, index) => (
             <div
               key={item.id}
               onClick={() => onHistoryItemClick(item.query, item.results)}
-              className="p-3 rounded-lg border border-border hover:bg-surface cursor-pointer transition-colors"
+              className="p-4 rounded-xl border border-zen-border hover:bg-white/60 dark:hover:bg-black/60 hover:shadow-lg cursor-pointer zen-transition hover:scale-[1.02] bg-white/40 dark:bg-black/40 backdrop-blur-sm"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="text-sm font-medium text-text-primary mb-1 line-clamp-2">
-                {item.query}
-              </div>
-              <div className="text-xs text-text-secondary">
-                {getRelativeTime(item.timestamp)}
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-text-primary mb-2 line-clamp-2 leading-relaxed">
+                    {item.query}
+                  </div>
+                  <div className="flex items-center text-xs text-text-secondary">
+                    <Clock className="h-3 w-3 mr-1 icon-strong" />
+                    {getRelativeTime(item.timestamp)}
+                  </div>
+                </div>
+                <div className="ml-3">
+                  <div className="w-2 h-2 bg-zen-accent rounded-full"></div>
+                </div>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Footer info */}
+      {searchHistory.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-zen-border">
+          <div className="text-center">
+            <div className="bg-white/40 dark:bg-black/40 backdrop-blur-sm rounded-xl p-4 shadow-lg">
+              <div className="flex items-center justify-center space-x-2 text-text-secondary">
+                <Sparkles className="h-4 w-4 text-zen-accent icon-strong" />
+                <span className="text-xs font-medium">{searchHistory.length} research queries</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
